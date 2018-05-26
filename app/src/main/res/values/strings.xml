@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Taskie</string>
+    <string name="item_title">title</string>
+    <string name="textview_dueDateText">Due date:</string>
+    <string name="item_duewDate_hint">date</string>
+    <string name="item_description">description</string>
+    <string name="item_priority_imagebuttonDesc">Priority imagebutton</string>
+    <string name="item_status_textOff">In progress</string>
+    <string name="item_status_textOn">Complete</string>
+    <string name="item_favorite">Favorite:</string>
+    <string name="dialog_title">What do you wish to do?</string>
+    <string name="dialog_edit">Edit</string>
+    <string name="dialog_title_choice">What do you wish to do?</string>
+    <string name="dialog_edit_item">Edit</string>
+    <string name="dialog_delete_item">Delete</string>
+    <string name="login_email_hint">Email</string>
+    <string name="login_password_hint">Password</string>
+    <string name="button_login">Log In</string>
+    <string name="button_register">Register</string>
+    <string name="register_username_hint">Username</string>
+    <string name="newtask_title_hint">Title</string>
+    <string name="newtask_desription_hint">Description</string>
+    <string name="newtask_dueDate_text">Due date</string>
+    <string name="newtask_setDateButton">Set Date</string>
+</resources>
