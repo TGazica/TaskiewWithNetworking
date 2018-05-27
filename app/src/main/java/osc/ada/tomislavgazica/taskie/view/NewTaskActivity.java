@@ -4,28 +4,25 @@ import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.realm.Realm;
+import io.realm.RealmQuery;
 import osc.ada.tomislavgazica.taskie.DatabaseHandler;
 import osc.ada.tomislavgazica.taskie.R;
 import osc.ada.tomislavgazica.taskie.model.Task;
-import osc.ada.tomislavgazica.taskie.model.TaskList;
 import osc.ada.tomislavgazica.taskie.model.TaskPriority;
 import osc.ada.tomislavgazica.taskie.networking.ApiService;
 import osc.ada.tomislavgazica.taskie.networking.RetrofitUtil;
@@ -52,6 +49,8 @@ public class NewTaskActivity extends AppCompatActivity implements DatePickerDial
 
     String dueDate;
     Realm realm;
+    boolean isUploadedToNet = true;
+    DatabaseHandler databaseHandler;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -59,6 +58,7 @@ public class NewTaskActivity extends AppCompatActivity implements DatePickerDial
         setContentView(R.layout.activity_new_task);
         realm = Realm.getDefaultInstance();
         ButterKnife.bind(this);
+        databaseHandler = DatabaseHandler.getInstance();
         setupSpinnerResource();
         setCurrentDate();
     }
@@ -108,7 +108,7 @@ public class NewTaskActivity extends AppCompatActivity implements DatePickerDial
         createNewTask(task);
     }
 
-    private void createNewTask(final Task task) {
+    private void createNewTask(Task task) {
         Retrofit retrofit = RetrofitUtil.createRetrofit();
         ApiService apiService = retrofit.create(ApiService.class);
 
@@ -120,24 +120,47 @@ public class NewTaskActivity extends AppCompatActivity implements DatePickerDial
             @Override
             public void onResponse(Call call, Response response) {
                 if (response.isSuccessful()) {
+                    updateRealmDatabase();
                     finish();
                 }
             }
 
             @Override
             public void onFailure(Call call, Throwable t) {
-                addNewTask(task);
+                isUploadedToNet = false;
                 finish();
             }
         });
 
+        if (!isUploadedToNet){
+            addNewTaskToRealm(task);
+        }
+
     }
 
-    public void addNewTask(Task task) {
+    private void updateRealmDatabase() {
+        realm.beginTransaction();
+        List<Task> tasks = new ArrayList<>();
+        tasks.addAll(databaseHandler.getFavoriteTasks(this));
+        tasks.addAll(databaseHandler.getNotFavoriteTasks(this));
+        if (!tasks.isEmpty()){
+            for (int i = 0; i<tasks.size(); i++){
+                Task task = realm.where(Task.class).equalTo("ID", tasks.get(i).getID()).findFirst();
+                if(task == null){
+                    realm.insert(tasks.get(i));
+                }
+            }
+        }
         realm.commitTransaction();
+
+    }
+
+    private void addNewTaskToRealm(Task task) {
+        realm.beginTransaction();
         realm.insert(task);
         task.setUploaded(false);
         realm.commitTransaction();
+
     }
 
 }

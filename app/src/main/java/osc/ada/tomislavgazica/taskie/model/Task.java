@@ -35,8 +35,7 @@ public class Task extends RealmObject implements Serializable {
     @Expose (serialize = false)
     @SerializedName("isFavorite")
     private boolean isFavorite;
-    private boolean isUploaded = false;
-    private boolean isUpdated = false;
+    private boolean isUploaded = true;
 
     public Task() {
     }
@@ -115,7 +114,7 @@ public class Task extends RealmObject implements Serializable {
         isFavorite = favorite;
     }
 
-    public boolean isUploaded() {
+    public boolean isUploaded(boolean b) {
         return isUploaded;
     }
 
@@ -139,11 +138,4 @@ public class Task extends RealmObject implements Serializable {
         return String.valueOf(taskPriority.toString());
     }
 
-    public boolean isUpdated() {
-        return isUpdated;
-    }
-
-    public void setUpdated(boolean updated) {
-        isUpdated = updated;
-    }
 }

@@ -106,10 +106,10 @@ public class EditTaskActivity extends AppCompatActivity implements DatePickerDia
 
         Task editedTask = new Task();
         editedTask.setID(task.getID());
-        editedTask.setTitle(task.getTitle());
-        editedTask.setDescription(task.getDescription());
-        editedTask.setDueDate(task.getDueDate());
-        editedTask.setPriority(task.getPriority()+1);
+        editedTask.setTitle(title.getText().toString());
+        editedTask.setDescription(description.getText().toString());
+        editedTask.setDueDate(dueDate);
+        editedTask.setPriority(priority.getSelectedItemPosition());
 
         Call editTask = apiService.editTask(SharedPrefsUtil.getPreferencesField(getApplicationContext(), SharedPrefsUtil.TOKEN), editedTask);
 

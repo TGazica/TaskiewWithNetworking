@@ -36,14 +36,13 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class AllTasksFragment extends Fragment implements TaskClickListener, DialogClickListener{
+public class AllTasksFragment extends Fragment implements TaskClickListener, DialogClickListener {
 
     @BindView(R.id.tasks)
     RecyclerView tasks;
     private TaskAdapter taskAdapter;
     Realm realm;
-    List<Task> favoriteTasks;
-    List<Task> otherTasks;
+    List<Task> allTasks;
 
     @Nullable
     @Override
@@ -55,10 +54,9 @@ public class AllTasksFragment extends Fragment implements TaskClickListener, Dia
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ButterKnife.bind(this, view);
-        Realm.init(view.getContext());
+        Realm.init(getContext());
         realm = Realm.getDefaultInstance();
-        favoriteTasks = new ArrayList<>();
-        otherTasks = new ArrayList<>();
+        allTasks = new ArrayList<>();
         tasks.setLayoutManager(new LinearLayoutManager(getActivity()));
         tasks.setItemAnimator(new DefaultItemAnimator());
         taskAdapter = new TaskAdapter(this);
@@ -68,67 +66,8 @@ public class AllTasksFragment extends Fragment implements TaskClickListener, Dia
         updateTasksDisplay();
     }
 
-    private void getDatabaseFromNet(){
-        Retrofit retrofit = RetrofitUtil.createRetrofit();
-        ApiService apiService = retrofit.create(ApiService.class);
-        Log.v("other", "other");
-
-//        Call getTasks = apiService.getFavoriteTasks(SharedPrefsUtil.getPreferencesField(getContext(), SharedPrefsUtil.TOKEN));
-//
-//        getTasks.enqueue(new Callback<TaskList>() {
-//            @Override
-//            public void onResponse(Call<TaskList> call, Response<TaskList> response) {
-//                favoriteTasks.addAll(response.body().tasksList);
-//            }
-//
-//            @Override
-//            public void onFailure(Call call, Throwable t) {
-//
-//            }
-//        });
-
-        Call getOtherTasks = apiService.getTasks(SharedPrefsUtil.getPreferencesField(getContext(), SharedPrefsUtil.TOKEN));
-
-        getOtherTasks.enqueue(new Callback<TaskList>() {
-            @Override
-            public void onResponse(Call<TaskList> call, Response<TaskList> response) {
-                taskAdapter.updateTasks(response.body().tasksList);
-                Log.v("other", "other");
-            }
-
-            @Override
-            public void onFailure(Call call, Throwable t) {
-
-            }
-        });
-    }
-
-    public void saveTasks(List<Task> tasks){
-        otherTasks.addAll(tasks);
-    }
-
-    private void updateRealm(){
-        getDatabaseFromNet();
-        realm.beginTransaction();
-
-        for (int i = 0; i < otherTasks.size(); i++) {
-
-            Toast.makeText(getContext(), otherTasks.get(i).toString(), Toast.LENGTH_SHORT).show();
-
-            realm.insertOrUpdate(otherTasks.get(i));
-
-        }
-        realm.commitTransaction();
-    }
-
-    private List<Task> getTasksFromDatabase() {
-        updateRealm();
-        return realm.where(Task.class).equalTo("isFavorite", false).findAll();
-    }
-
     private void updateTasksDisplay() {
-        getDatabaseFromNet();
-        taskAdapter.updateTasks(otherTasks);
+        taskAdapter.updateTasks(realm.where(Task.class).findAll());
     }
 
     @Override
@@ -167,15 +106,17 @@ public class AllTasksFragment extends Fragment implements TaskClickListener, Dia
         Retrofit retrofit = RetrofitUtil.createRetrofit();
         ApiService apiService = retrofit.create(ApiService.class);
 
-        Call deleteTask = apiService.deleteTask(SharedPrefsUtil.getPreferencesField(getContext(),SharedPrefsUtil.TOKEN), task.getID());
+        Call deleteTask = apiService.deleteTask(SharedPrefsUtil.getPreferencesField(getContext(), SharedPrefsUtil.TOKEN), task.getID());
 
         deleteTask.enqueue(new Callback() {
             @Override
             public void onResponse(Call call, Response response) {
-                realm.beginTransaction();
-                Task deleteTask = realm.where(Task.class).equalTo("ID", task.getID()).findFirst();
-                deleteTask.deleteFromRealm();
-                realm.commitTransaction();
+                if (response.isSuccessful()) {
+                    realm.beginTransaction();
+                    Task deleteTask = realm.where(Task.class).equalTo("ID", task.getID()).findFirst();
+                    deleteTask.deleteFromRealm();
+                    realm.commitTransaction();
+                }
 
             }
 
@@ -184,6 +125,9 @@ public class AllTasksFragment extends Fragment implements TaskClickListener, Dia
                 Toast.makeText(getContext(), "Network error, not deleted.", Toast.LENGTH_SHORT).show();
             }
         });
+        updateTasksDisplay();
 
     }
+
+
 }

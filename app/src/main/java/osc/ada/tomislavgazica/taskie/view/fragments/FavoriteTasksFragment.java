@@ -54,7 +54,7 @@ public class FavoriteTasksFragment extends Fragment implements TaskClickListener
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ButterKnife.bind(this, view);
-        Realm.init(view.getContext());
+        Realm.init(getContext());
         realm = Realm.getDefaultInstance();
         favoriteTasks = new ArrayList<>();
         tasks.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -66,62 +66,23 @@ public class FavoriteTasksFragment extends Fragment implements TaskClickListener
         updateTasksDisplay();
     }
 
-    private void getDatabaseFromNet(){
-        Retrofit retrofit = RetrofitUtil.createRetrofit();
-        ApiService apiService = retrofit.create(ApiService.class);
-        Log.v("fav", "fav");
-
-        Call getTasks = apiService.getFavoriteTasks(SharedPrefsUtil.getPreferencesField(getContext(), SharedPrefsUtil.TOKEN));
-
-        getTasks.enqueue(new Callback<TaskList>() {
-            @Override
-            public void onResponse(Call<TaskList> call, Response<TaskList> response) {
-                favoriteTasks.addAll(response.body().tasksList);
-                Log.v("fav", "fav");
-            }
-
-            @Override
-            public void onFailure(Call call, Throwable t) {
-
-            }
-        });
-    }
-
-    private void updateRealm(){
-        getDatabaseFromNet();
-        realm.beginTransaction();
-        realm.insertOrUpdate(favoriteTasks);
-        realm.commitTransaction();
-    }
-
-    private List<Task> getTasksFromDatabase() {
-        updateRealm();
-        return realm.where(Task.class).equalTo("isFavorite", true).findAll();
-    }
-
     private void updateTasksDisplay() {
-        taskAdapter.updateTasks(getTasksFromDatabase());
+        taskAdapter.updateTasks(realm.where(Task.class).equalTo("isFavorite", true).findAll());
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        updateTasksDisplay();
-    }
 
     @Override
     public void onStatusClick(Task task) {
-        updateTasksDisplay();
+
     }
 
     @Override
     public void onPriorityClick(Task task) {
-        updateTasksDisplay();
     }
 
     @Override
     public void onFavoriteClick(Task task) {
-        updateTasksDisplay();
+
     }
 
     @Override
@@ -145,15 +106,18 @@ public class FavoriteTasksFragment extends Fragment implements TaskClickListener
         Retrofit retrofit = RetrofitUtil.createRetrofit();
         ApiService apiService = retrofit.create(ApiService.class);
 
-        Call deleteTask = apiService.deleteTask(SharedPrefsUtil.getPreferencesField(getContext(),SharedPrefsUtil.TOKEN), task.getID());
+        Call deleteTask = apiService.deleteTask(SharedPrefsUtil.getPreferencesField(getContext(), SharedPrefsUtil.TOKEN), task.getID());
 
         deleteTask.enqueue(new Callback() {
             @Override
             public void onResponse(Call call, Response response) {
-                realm.beginTransaction();
-                Task deleteTask = realm.where(Task.class).equalTo("ID", task.getID()).findFirst();
-                deleteTask.deleteFromRealm();
-                realm.commitTransaction();
+                if (response.isSuccessful()) {
+                    realm.beginTransaction();
+                    Task deleteTask = realm.where(Task.class).equalTo("ID", task.getID()).findFirst();
+                    deleteTask.deleteFromRealm();
+                    realm.commitTransaction();
+                }
+
 
             }
 

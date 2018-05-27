@@ -65,12 +65,12 @@ public class TaskViewHolder extends RecyclerView.ViewHolder {
         this.listener = listener;
     }
 
-    public void setContext(Context context){
+    public void setContext(Context context) {
         this.context = context;
     }
 
     public void setItem(Task current) {
-        this.item = realm.where(Task.class).equalTo("ID", current.getID()).findFirst();
+        this.item = current;
 
         if (item != null) {
             title.setText(item.getTitle());
@@ -94,21 +94,21 @@ public class TaskViewHolder extends RecyclerView.ViewHolder {
     }
 
     @OnClick(R.id.imagebutton_item_priority)
-    public void onPriorityClick(){
-        realm.beginTransaction();
+    public void onPriorityClick() {
 
-
-        final Retrofit retrofit = RetrofitUtil.createRetrofit();
+        Retrofit retrofit = RetrofitUtil.createRetrofit();
         ApiService apiService = retrofit.create(ApiService.class);
 
-        Call isCompleted = apiService.changePriorityLevel(SharedPrefsUtil.getPreferencesField(context,SharedPrefsUtil.TOKEN), item.getID(), item.getPriority());
+        Call isCompleted = apiService.changePriorityLevel(SharedPrefsUtil.getPreferencesField(context, SharedPrefsUtil.TOKEN), item.getID(), item.getPriority());
 
         isCompleted.enqueue(new Callback() {
             @Override
             public void onResponse(Call call, Response response) {
-                changePriority();
-                if (listener != null) {
-                    listener.onPriorityClick(item);
+                if (response.isSuccessful()) {
+                    changePriority();
+                    if (listener != null) {
+                        listener.onPriorityClick(item);
+                    }
                 }
 
             }
@@ -119,11 +119,9 @@ public class TaskViewHolder extends RecyclerView.ViewHolder {
             }
         });
 
-        realm.commitTransaction();
-
     }
 
-    public void changePriority(){
+    private void changePriority() {
         realm.beginTransaction();
         TaskPriority priority = item.getTaskPriorityInt();
         if (priority == TaskPriority.LOW) {
@@ -144,18 +142,20 @@ public class TaskViewHolder extends RecyclerView.ViewHolder {
         Retrofit retrofit = RetrofitUtil.createRetrofit();
         ApiService apiService = retrofit.create(ApiService.class);
 
-        Call isCompleted = apiService.changeIsCompleted(SharedPrefsUtil.getPreferencesField(context,SharedPrefsUtil.TOKEN), item.getID());
+        Call isCompleted = apiService.changeIsCompleted(SharedPrefsUtil.getPreferencesField(context, SharedPrefsUtil.TOKEN), item.getID());
 
         isCompleted.enqueue(new Callback() {
             @Override
             public void onResponse(Call call, Response response) {
-                realm.beginTransaction();
-                item.setCompleted(!item.isCompleted());
-                realm.commitTransaction();
+                if (response.isSuccessful()) {
+                    realm.beginTransaction();
+                    item.setCompleted(!item.isCompleted());
+                    realm.commitTransaction();
 
 
-                if (listener != null) {
-                    listener.onStatusClick(item);
+                    if (listener != null) {
+                        listener.onStatusClick(item);
+                    }
                 }
             }
 
@@ -169,21 +169,23 @@ public class TaskViewHolder extends RecyclerView.ViewHolder {
     }
 
     @OnClick(R.id.switch_item_favorite)
-    public void onFavoriteClick(){
+    public void onFavoriteClick() {
         Retrofit retrofit = RetrofitUtil.createRetrofit();
         ApiService apiService = retrofit.create(ApiService.class);
 
-        Call isFavorite = apiService.changeIsFavorite(SharedPrefsUtil.getPreferencesField(context,SharedPrefsUtil.TOKEN), item.getID());
+        Call isFavorite = apiService.changeIsFavorite(SharedPrefsUtil.getPreferencesField(context, SharedPrefsUtil.TOKEN), item.getID());
 
         isFavorite.enqueue(new Callback() {
             @Override
             public void onResponse(Call call, Response response) {
-                realm.beginTransaction();
-                item.setFavorite(!item.isFavorite());
-                realm.commitTransaction();
+                if (response.isSuccessful()) {
+                    realm.beginTransaction();
+                    item.setFavorite(!item.isFavorite());
+                    realm.commitTransaction();
 
-                if(listener != null){
-                    listener.onFavoriteClick(item);
+                    if (listener != null) {
+                        listener.onFavoriteClick(item);
+                    }
                 }
             }
 
