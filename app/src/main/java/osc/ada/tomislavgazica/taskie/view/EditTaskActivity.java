@@ -13,8 +13,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.Calendar;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -105,7 +103,7 @@ public class EditTaskActivity extends AppCompatActivity implements DatePickerDia
         ApiService apiService = retrofit.create(ApiService.class);
 
         Task editedTask = new Task();
-        editedTask.setID(task.getID());
+        editedTask.setId(task.getId());
         editedTask.setTitle(title.getText().toString());
         editedTask.setDescription(description.getText().toString());
         editedTask.setDueDate(dueDate);

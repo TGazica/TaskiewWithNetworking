@@ -2,15 +2,12 @@ package osc.ada.tomislavgazica.taskie.view;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
-
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -99,7 +96,7 @@ public class TaskViewHolder extends RecyclerView.ViewHolder {
         Retrofit retrofit = RetrofitUtil.createRetrofit();
         ApiService apiService = retrofit.create(ApiService.class);
 
-        Call isCompleted = apiService.changePriorityLevel(SharedPrefsUtil.getPreferencesField(context, SharedPrefsUtil.TOKEN), item.getID(), item.getPriority());
+        Call isCompleted = apiService.changePriorityLevel(SharedPrefsUtil.getPreferencesField(context, SharedPrefsUtil.TOKEN), item.getId(), item.getPriority()+1);
 
         isCompleted.enqueue(new Callback() {
             @Override
@@ -142,7 +139,7 @@ public class TaskViewHolder extends RecyclerView.ViewHolder {
         Retrofit retrofit = RetrofitUtil.createRetrofit();
         ApiService apiService = retrofit.create(ApiService.class);
 
-        Call isCompleted = apiService.changeIsCompleted(SharedPrefsUtil.getPreferencesField(context, SharedPrefsUtil.TOKEN), item.getID());
+        Call isCompleted = apiService.changeIsCompleted(SharedPrefsUtil.getPreferencesField(context, SharedPrefsUtil.TOKEN), item.getId());
 
         isCompleted.enqueue(new Callback() {
             @Override
@@ -173,7 +170,7 @@ public class TaskViewHolder extends RecyclerView.ViewHolder {
         Retrofit retrofit = RetrofitUtil.createRetrofit();
         ApiService apiService = retrofit.create(ApiService.class);
 
-        Call isFavorite = apiService.changeIsFavorite(SharedPrefsUtil.getPreferencesField(context, SharedPrefsUtil.TOKEN), item.getID());
+        Call isFavorite = apiService.changeIsFavorite(SharedPrefsUtil.getPreferencesField(context, SharedPrefsUtil.TOKEN), item.getId());
 
         isFavorite.enqueue(new Callback() {
             @Override

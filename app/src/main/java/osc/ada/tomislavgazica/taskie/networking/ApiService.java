@@ -26,7 +26,7 @@ public interface ApiService {
     Call<Task> postNewTask(@Header("authorization") String header, @Body Task task);
 
     @GET("api/note/")
-    Call<TaskList> getTasks(@Header("authorization") String header);
+    Call<TaskList> getOtherTasks(@Header("authorization") String header);
 
     @GET("api/note/favorite")
     Call<TaskList> getFavoriteTasks(@Header("authorization") String header);
@@ -42,7 +42,7 @@ public interface ApiService {
     Call<Task> changePriorityLevel(@Header("authorization") String header, @Field("id") String id, @Field("taskPriority") int taskPriority);
 
     @POST("api/note/delete")
-    Call<RegistrationToken> deleteTask(@Header("authorization") String header, @Query("id") String id);
+    Call<Task> deleteTask(@Header("authorization") String header, @Query("id") String id);
 
     @POST("api/note/edit")
     Call<Task> editTask(@Header("authorization") String header, @Body Task task);

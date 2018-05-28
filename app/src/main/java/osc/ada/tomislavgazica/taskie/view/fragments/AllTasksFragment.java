@@ -7,7 +7,6 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,11 +18,10 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.realm.Realm;
-import io.realm.RealmResults;
-import osc.ada.tomislavgazica.taskie.DatabaseHandler;
+import osc.ada.tomislavgazica.taskie.App;
 import osc.ada.tomislavgazica.taskie.R;
+import osc.ada.tomislavgazica.taskie.handlers.DatabaseHandler;
 import osc.ada.tomislavgazica.taskie.model.Task;
-import osc.ada.tomislavgazica.taskie.model.TaskList;
 import osc.ada.tomislavgazica.taskie.networking.ApiService;
 import osc.ada.tomislavgazica.taskie.networking.RetrofitUtil;
 import osc.ada.tomislavgazica.taskie.util.DialogClickListener;
@@ -41,8 +39,8 @@ public class AllTasksFragment extends Fragment implements TaskClickListener, Dia
     @BindView(R.id.tasks)
     RecyclerView tasks;
     private TaskAdapter taskAdapter;
-    Realm realm;
     List<Task> allTasks;
+    DatabaseHandler databaseHandler;
 
     @Nullable
     @Override
@@ -54,9 +52,8 @@ public class AllTasksFragment extends Fragment implements TaskClickListener, Dia
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ButterKnife.bind(this, view);
-        Realm.init(getContext());
-        realm = Realm.getDefaultInstance();
         allTasks = new ArrayList<>();
+        databaseHandler = App.getDatabaseHandler();
         tasks.setLayoutManager(new LinearLayoutManager(getActivity()));
         tasks.setItemAnimator(new DefaultItemAnimator());
         taskAdapter = new TaskAdapter(this);
@@ -66,8 +63,14 @@ public class AllTasksFragment extends Fragment implements TaskClickListener, Dia
         updateTasksDisplay();
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateTasksDisplay();
+    }
+
     private void updateTasksDisplay() {
-        taskAdapter.updateTasks(realm.where(Task.class).findAll());
+        taskAdapter.updateTasks(databaseHandler.getAllTasks());
     }
 
     @Override
@@ -97,7 +100,7 @@ public class AllTasksFragment extends Fragment implements TaskClickListener, Dia
     @Override
     public void onEditClick(Task task) {
         Intent intent = new Intent(getContext(), EditTaskActivity.class);
-        intent.putExtra(EditTaskActivity.EDIT_TASK, task.getID());
+        intent.putExtra(EditTaskActivity.EDIT_TASK, task.getId());
         startActivity(intent);
     }
 
@@ -106,16 +109,13 @@ public class AllTasksFragment extends Fragment implements TaskClickListener, Dia
         Retrofit retrofit = RetrofitUtil.createRetrofit();
         ApiService apiService = retrofit.create(ApiService.class);
 
-        Call deleteTask = apiService.deleteTask(SharedPrefsUtil.getPreferencesField(getContext(), SharedPrefsUtil.TOKEN), task.getID());
+        Call deleteTask = apiService.deleteTask(SharedPrefsUtil.getPreferencesField(getContext(), SharedPrefsUtil.TOKEN), task.getId());
 
         deleteTask.enqueue(new Callback() {
             @Override
             public void onResponse(Call call, Response response) {
                 if (response.isSuccessful()) {
-                    realm.beginTransaction();
-                    Task deleteTask = realm.where(Task.class).equalTo("ID", task.getID()).findFirst();
-                    deleteTask.deleteFromRealm();
-                    realm.commitTransaction();
+                    databaseHandler.deleteTask(task.getId());
                 }
 
             }

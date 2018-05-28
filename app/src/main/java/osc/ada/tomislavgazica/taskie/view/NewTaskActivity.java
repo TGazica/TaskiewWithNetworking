@@ -19,8 +19,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.realm.Realm;
-import io.realm.RealmQuery;
-import osc.ada.tomislavgazica.taskie.DatabaseHandler;
+import osc.ada.tomislavgazica.taskie.App;
+import osc.ada.tomislavgazica.taskie.handlers.DatabaseHandler;
 import osc.ada.tomislavgazica.taskie.R;
 import osc.ada.tomislavgazica.taskie.model.Task;
 import osc.ada.tomislavgazica.taskie.model.TaskPriority;
@@ -57,8 +57,8 @@ public class NewTaskActivity extends AppCompatActivity implements DatePickerDial
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_task);
         realm = Realm.getDefaultInstance();
+        databaseHandler = App.getDatabaseHandler();
         ButterKnife.bind(this);
-        databaseHandler = DatabaseHandler.getInstance();
         setupSpinnerResource();
         setCurrentDate();
     }
@@ -120,7 +120,7 @@ public class NewTaskActivity extends AppCompatActivity implements DatePickerDial
             @Override
             public void onResponse(Call call, Response response) {
                 if (response.isSuccessful()) {
-                    updateRealmDatabase();
+                    databaseHandler.getTasksFromNet();
                     finish();
                 }
             }
@@ -138,22 +138,7 @@ public class NewTaskActivity extends AppCompatActivity implements DatePickerDial
 
     }
 
-    private void updateRealmDatabase() {
-        realm.beginTransaction();
-        List<Task> tasks = new ArrayList<>();
-        tasks.addAll(databaseHandler.getFavoriteTasks(this));
-        tasks.addAll(databaseHandler.getNotFavoriteTasks(this));
-        if (!tasks.isEmpty()){
-            for (int i = 0; i<tasks.size(); i++){
-                Task task = realm.where(Task.class).equalTo("ID", tasks.get(i).getID()).findFirst();
-                if(task == null){
-                    realm.insert(tasks.get(i));
-                }
-            }
-        }
-        realm.commitTransaction();
 
-    }
 
     private void addNewTaskToRealm(Task task) {
         realm.beginTransaction();

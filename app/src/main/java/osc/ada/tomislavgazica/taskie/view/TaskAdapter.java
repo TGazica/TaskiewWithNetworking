@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 
-import osc.ada.tomislavgazica.taskie.DatabaseHandler;
 import osc.ada.tomislavgazica.taskie.R;
 import osc.ada.tomislavgazica.taskie.model.Task;
 import osc.ada.tomislavgazica.taskie.util.TaskClickListener;

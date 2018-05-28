@@ -16,7 +16,7 @@ public class Task extends RealmObject implements Serializable {
     @SerializedName("id")
     @Required
     @PrimaryKey
-    private String ID;
+    private String id;
     @Expose
     @SerializedName("title")
     private String title;
@@ -41,15 +41,15 @@ public class Task extends RealmObject implements Serializable {
     }
 
     public Task(String title, String description, int priority, String dueDate) {
-        ID = UUID.randomUUID().toString();
+        id = UUID.randomUUID().toString();
         this.title = title;
         this.description = description;
         this.priority = priority;
         this.dueDate = dueDate;
     }
 
-    public Task(String title, String description, int priority, String dueDate, boolean isCompleted, boolean isFavorite) {
-        ID = UUID.randomUUID().toString();
+    public Task(String networkId, String title, String description, int priority, String dueDate, boolean isCompleted, boolean isFavorite) {
+        id = UUID.randomUUID().toString();
         this.title = title;
         this.isCompleted = isCompleted;
         this.isFavorite = isFavorite;
@@ -58,12 +58,12 @@ public class Task extends RealmObject implements Serializable {
         this.dueDate = dueDate;
     }
 
-    public String getID() {
-        return ID;
+    public String getId() {
+        return id;
     }
 
-    public void setID(String ID) {
-        this.ID = ID;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getTitle() {
