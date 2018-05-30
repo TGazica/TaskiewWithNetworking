@@ -62,7 +62,7 @@ public class EditTaskActivity extends AppCompatActivity implements DatePickerDia
             ID = intent.getStringExtra(EDIT_TASK);
         }
 
-        task = realm.where(Task.class).equalTo("ID", ID).findFirst();
+        task = realm.where(Task.class).equalTo("id", ID).findFirst();
 
         if (task != null) {
             title.setText(task.getTitle());
